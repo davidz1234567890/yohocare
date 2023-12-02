@@ -6,8 +6,8 @@ face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 images = glob.glob('faces/*.png')
-#i = 0
-for image in images:
+
+for image in images[1:]:
     print("newimage\n")
     print(image)
     img = cv2.imread(image)
@@ -19,12 +19,6 @@ for image in images:
     print(gray)
     # I think 1.09 for scale and 2 for minNeighbors works best
     # I think 1.085 and 2 work the best
-
-    # i = 0.1
-    # while i < 10:
-    #     faces = face_cascade.detectMultiScale(gray, i, 4)
-    #     if()
-    #     i=i+0.1
 
     # scoring function
     # declare intermediate variables for the parameter
@@ -70,18 +64,6 @@ for image in images:
 
         #gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
-        # print("img:\n")
-        # print("x is")
-        # print(x)
-        # print("y is")
-        # print(y)
-        # print("h is")
-        # print(h)
-        # print("w is")
-        # print(w)
-        # print("gray:\n")
-        # print(gray)
-        # print(img)
         gray_face = gray[y:y+h, x:x+w]  # this section includes only the face
         # x and y are the top left coordinate of the face
         color_face = img[y:y+h, x:x+w]
@@ -98,30 +80,77 @@ for image in images:
 
 # pick one photo and check where the eye location is
 # manually calculate the coordinates of the eyes
-        scalefactor = 1.01
-        correct_scale = scalefactor
-        neighbors = 1
-        correct_neighbors = neighbors
-
-        # see what are the element of biggest
-        biggest = eye_cascade.detectMultiScale(gray_face, 1.01, 1)
-        while scalefactor < 1.5:
-            while neighbors < 7:
-                eyes = eye_cascade.detectMultiScale(
-                    gray_face, scalefactor, neighbors)
-                length1 = len(eyes)
-                length2 = len(eyes[0])
-                if(eyes[length1//2][length2//2] < biggest[length1//2][length2//2]):
-                    biggest = eyes
-                    correct_scale = scalefactor
-                    correct_neighbors = neighbors
-                neighbors = neighbors + 1
-            scalefactor = scalefactor + 0.01
 
         eyes = eye_cascade.detectMultiScale(
-            gray_face, correct_scale, correct_neighbors)  # before was 1.05 and 4
-        print("eyes\n")
+            gray_face, 1.085, 2)  # before was 1.05 and 4
+        print("here is eyes line 143")
         print(eyes)
+        best_left_eye = (0, 0, 0, 0)
+        good_left_eyes = []
+        for eye in eyes:
+            # distance_difference = (
+            #     eye[0] - correct_left_x) + (eye[1] - correct_left_y)
+            # area_difference = (eye[2] * eye[3] - area_of_left_rectangle)
+            # if(distance_difference < smallest_difference_in_distance and area_difference < smallest_difference_in_area):
+            #     smallest_difference_in_distance = distance_difference
+            #     smallest_difference_in_area = area_difference
+            #     best_left_eye = eye
+            x = eye[0]
+            x = x + good_x
+            y = eye[1]
+            y = y + good_y
+            width = eye[2]
+            height = eye[3]
+            if((y+height < good_y+greatest_height//2) and (y > good_y) and (x > good_x) and (x+width < good_x+greatest_width//2)):
+                good_left_eyes.append(eye)
+
+        smallest_difference_in_distance = 1000000
+        smallest_difference_in_area = 1000000
+
+        best_right_eye = (0, 0, 0, 0)
+        good_right_eyes = []
+        for eye in eyes:
+            # distance_difference = (
+            #     eye[0] - correct_right_x) + (eye[1] - correct_right_y)
+            # area_difference = (eye[2] * eye[3] - area_of_right_rectangle)
+            # if(distance_difference < smallest_difference_in_distance and area_difference < smallest_difference_in_area):
+            #     smallest_difference_in_distance = distance_difference
+            #     smallest_difference_in_area = area_difference
+            #     best_right_eye = eye
+            x = eye[0]
+            x = x+good_x
+            y = eye[1]
+            y = y+good_y
+            width = eye[2]
+            height = eye[3]
+
+            print("here is goodx\n")
+            print(good_x)
+            print("here is goody")
+            print(good_y)
+            print("here is greatest width\n")
+            print(greatest_width)
+            print("here is greatest height\n")
+            print(greatest_height)
+            print("here is greatest width\n")
+            print(greatest_width)
+
+            print("here is x")
+            print(x)
+            print("here is y")
+            print(y)
+            print("here is width")
+            print(width)
+            print("here is height")
+            print(height)
+            if((y+height < good_y+greatest_height//2) and (y > good_y) and (x > good_x+greatest_width//2) and (x+width < good_x + greatest_width)):
+                good_right_eyes.append(eye)
+
+        print("good left\n")
+        print(good_left_eyes)
+        print("good right\n")
+        print(good_right_eyes)
+
         # draw a rectangle around eyes
         color = (0, 255, 255)
         thickness = 2
@@ -134,11 +163,40 @@ for image in images:
         # feed in photo without glass
         # k-means algorithm:lookp at the wikipedia   k = 3, mouth and 2 eye
         # scoring function is base on distance between center of cluster
-        for (eye_x, eye_y, eye_width, eye_height) in eyes:
-            topleftcoordinate = (eye_x, eye_y)
-            width_height = (eye_x+eye_width, eye_y+eye_height)
-            cv2.rectangle(color_face, topleftcoordinate,
-                          width_height, color, thickness)
+
+        # for (eye_x, eye_y, eye_width, eye_height) in eyes:
+        #     topleftcoordinate = (eye_x, eye_y)
+        #     width_height = (eye_x+eye_width, eye_y+eye_height)
+        #     cv2.rectangle(color_face, topleftcoordinate,
+        #                   width_height, color, thickness)
+
+        # left eye
+        topleftcoordinate = (good_left_eyes[0][0], good_left_eyes[0][1])
+        width_height = (good_left_eyes[0][0]+good_left_eyes[0][2],
+                        good_left_eyes[0][1]+good_left_eyes[0][3])
+        cv2.rectangle(color_face, topleftcoordinate,
+                      width_height, color, thickness)
+
+        toprightcoordinate = (good_right_eyes[0][0], good_right_eyes[0][1])
+        width_height = (good_right_eyes[0][0]+good_right_eyes[0][2],
+                        good_right_eyes[0][1]+good_right_eyes[0][3])
+        cv2.rectangle(color_face, toprightcoordinate,
+                      width_height, color, thickness)
+
+        # topleftcoordinate = (good_right_eyes[0][0], good_right_eyes[0][1])
+        # width_height = (
+        #     good_right_eyes[0][0]+good_right_eyes[0][2], good_right_eyes[0][1]+good_right_eyes[0][3])
+        # cv2.rectangle(color_face, topleftcoordinate,
+        #               width_height, color, thickness)
+        #         length1 = len(eyes)
+        #         length2 = len(eyes[0])
+        #         if(eyes[length1//2][length2//2] < biggest[length1//2][length2//2]):
+        #             biggest = eyes
+        #             correct_scale = scalefactor
+        #             correct_neighbors = neighbors
+
+        #         neighbors = neighbors + 1
+        #     scalefactor = scalefactor + 0.01
 
         # look up a cv2.ellipse function
         # radius = w // 2  # or can be h / 2 or can be anything based on your requirements
@@ -162,7 +220,10 @@ for image in images:
     cv2.ellipse(img, center_coordinates, axes_length,
                 angle, start, end, color, thickness)
     cv2.imshow('image', img)
-    cv2.waitKey(1000)
+    cv2.waitKey(5000)
+    break
+
+
 cv2.destroyAllWindows()
 
 
@@ -171,3 +232,8 @@ cv2.destroyAllWindows()
 # take a photo of nothing/no face or wall
 # feed the image and nothing to draw
 # if empty exception then
+
+
+# back up this code
+# define a draw function
+# define a function test whether user is looking towards left whether user is looking towards right
